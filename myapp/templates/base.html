@@ -7,11 +7,21 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <style>
         .navbar-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             font-size: 1.5rem;
             font-weight: 700;
             letter-spacing: 0.5px;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             animation: glow 2s ease-in-out infinite;
+        }
+
+        .navbar-brand img {
+            max-height: 50px;
+            width: auto;
+            border-radius: 0.35rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         
         @keyframes glow {
@@ -73,7 +83,10 @@
 <body class="bg-light">
 <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-bottom: 2px solid rgba(59, 130, 246, 0.3); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);">
 <div class="container">
-<a class="navbar-brand" href="/">🏥 Vet Clinic</a>
+<a class="navbar-brand" href="/">
+    <img src="/media/Logo%20SPU%20SIT_White.png" alt="True Friend Vet Clinic Logo">
+    <span>🏥 Vet Clinic</span>
+</a>
 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
 <span class="navbar-toggler-icon"></span>
 </button>
