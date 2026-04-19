@@ -8,6 +8,158 @@ Pet Clinic Management System คือระบบบริหารจัดก
 68024093	ศุภกร นรินทรกุล ณ อยุธยา	
 68037232	เนติกร คำสิงหา	
 
+## วิธีใช้งานโปรเจกต์ Django นี้หลังจากดาวน์โหลดจาก GitHub
+
+โปรเจกต์นี้เป็นเว็บไซต์ที่พัฒนาด้วย Django หากต้องการเปิดใช้งานบนเครื่องของคุณ ให้ทำตามขั้นตอนด้านล่าง
+
+---
+
+## สิ่งที่ต้องติดตั้งก่อน
+* Python 3.x
+* Git (ถ้าจะ clone จาก GitHub)
+* VS Code หรือโปรแกรมแก้ไขโค้ดอื่น
+* Internet (สำหรับติดตั้ง package)
+
+---
+
+## 1. ดาวน์โหลดโปรเจกต์
+
+### วิธี Clone จาก GitHub
+
+```bash
+git clone https://github.com/USERNAME/REPOSITORY.git
+```
+
+### หรือดาวน์โหลดเป็น ZIP
+
+* กด Code
+* Download ZIP
+* แตกไฟล์ออกมา
+
+---
+
+## 2. เข้าโฟลเดอร์โปรเจกต์
+
+```bash
+cd project-main
+```
+
+---
+
+## 3. สร้าง Virtual Environment
+
+```bash
+python -m venv .venv
+```
+
+---
+
+## 4. เปิดใช้งาน Virtual Environment
+
+### Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+### Mac / Linux
+
+```bash
+source .venv/bin/activate
+```
+
+---
+
+## 5. ติดตั้ง Package ที่จำเป็น
+
+```bash
+pip install -r requirements.txt
+```
+
+ถ้าไม่มีไฟล์ requirements.txt ให้ติดตั้งเอง เช่น
+
+```bash
+pip install django whitenoise python-dateutil
+```
+
+---
+
+## 6. Migration Database
+
+สร้างตารางในฐานข้อมูล SQLite เพื่อทำการอัพเดทข้อมูลให้ตรงกัน
+
+```bash
+python manage.py migrate
+```
+
+---
+
+## 7. สร้าง Admin (ถ้าต้องการ)
+
+```bash
+python manage.py createsuperuser
+```
+
+แล้วกรอก Username / Email / Password
+
+---
+
+## 8. รันเว็บไซต์
+
+```bash
+python manage.py runserver
+```
+
+---
+
+## 9. เข้าใช้งานเว็บ
+
+เปิด Browser แล้วเข้า:
+
+```text
+http://127.0.0.1:8000/
+```
+
+หน้า Admin:
+
+```text
+http://127.0.0.1:8000/admin
+```
+
+---
+
+## หากรันไม่ได้
+
+### Module not found
+
+ติดตั้ง package เพิ่ม เช่น
+
+```bash
+pip install ชื่อแพ็กเกจ
+```
+
+### Database Error
+
+ลองรัน
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### Static file ไม่ขึ้น
+
+รัน
+
+```bash
+python manage.py collectstatic
+```
+
+---
+* ฐานข้อมูลหลักใช้ `db.sqlite3`
+
+---
+
 🚀 Key Features (ฟีเจอร์เด่นของระบบ)
 📈 Dashboard
 
