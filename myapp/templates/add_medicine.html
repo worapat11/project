@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h2>เพิ่มยา</h2>
+
+<form method="POST">
+{% csrf_token %}
+
+<div class="mb-3">
+<p class="text-muted">รหัสยาจะสร้างอัตโนมัติ</p>
+</div>
+
+<div class="mb-3">
+<label>ชื่อยา</label>
+<input type="text" name="medicine_name" class="form-control">
+</div>
+
+<div class="mb-3">
+<label>Type</label>
+<select name="medicine_type" class="form-control">
+    <option value="">-- เลือกประเภท --</option>
+    <option value="ยา">ยา (Medicines)</option>
+    <option value="วัคซีน">วัคซีน (Vaccines)</option>
+    <option value="อาหารสัตว์">อาหารสัตว์ (Pet Food)</option>
+    <option value="อาหารเสริม">อาหารเสริม (Supplements)</option>
+    <option value="ผลิตภัณฑ์ดูแลสัตว์">ผลิตภัณฑ์ดูแลสัตว์ (Pet Care)</option>
+    <option value="อุปกรณ์สัตว์เลี้ยง">อุปกรณ์สัตว์เลี้ยง (Accessories)</option>
+</select>
+</div>
+
+<div class="mb-3">
+<label>ผู้จัดจำหน่าย</label>
+<select name="supplier" class="form-control">
+    <option value="">-- Select supplier --</option>
+    {% for s in suppliers %}
+    <option value="{{ s.supplier_id }}">{{ s.supplier_name }}</option>
+    {% endfor %}
+</select>
+</div>
+
+<div class="mb-3">
+<label>ราคา</label>
+<input type="number" step="0.01" name="price" class="form-control">
+</div>
+
+<div class="mb-3">
+<label>จำนวนคงเหลือ</label>
+<input type="number" name="stock" class="form-control" min="0" value="0">
+</div>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<button class="btn btn-success">บันทึก</button>
+<a href="/medicines/" class="btn btn-secondary">ยกเลิก</a>
+
+</form>
+
+</div>
+
+{% endblock %}

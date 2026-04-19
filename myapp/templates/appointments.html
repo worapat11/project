@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.page-header h2 {
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+}
+
+.btn-add {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  color: white;
+}
+
+.btn-add:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  color: white;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.status-badge {
+  border-radius: 50px;
+  padding: 6px 12px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.status-scheduled { background: #dbeafe; color: #1e40af; }
+.status-completed { background: #dcfce7; color: #15803d; }
+.status-cancelled { background: #fee2e2; color: #b91c1c; }
+
+.appointment-row {
+  transition: all 0.3s ease;
+}
+
+.appointment-row:hover {
+  background-color: #f0f7ff !important;
+}
+
+.time-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+</style>
+
+<div class="page-header">
+  <h2>นัดหมาย</h2>
+  <a href="{% url 'add_appointment' %}" class="btn btn-add btn-lg">➕ เพิ่มนัดหมาย</a>
+</div>
+
+<form method="get" class="search-bar">
+  <div style="display: flex; gap: 10px; width: 100%; flex-wrap: wrap;">
+    <input type="text" name="q" value="{{ q|default:'' }}" class="form-control" placeholder="🔍 ค้นหารหัส/สัตว์เลี้ยง...">
+    
+    <input type="text" name="owner" value="{{ owner|default:'' }}" class="form-control" placeholder="👤 ค้นหาเจ้าของ..." style="flex: 0 1 220px;">
+    
+    <input type="date" name="date" value="{{ date|default:'' }}" class="form-control" placeholder="📅 วันที่..." style="flex: 0 1 180px;">
+    
+    <select name="status" class="form-control" style="flex: 0 1 180px;">
+      <option value="">📊 สถานะทั้งหมด</option>
+      {% for s in all_statuses %}
+      <option value="{{ s.status_name }}" {% if status == s.status_name %}selected{% endif %}>
+        {% if s.status_name == 'Scheduled' %}⏳ รอดำเนินการ
+        {% elif s.status_name == 'Completed' %}✅ เสร็จแล้ว
+        {% elif s.status_name == 'Cancelled' %}❌ ยกเลิก
+        {% else %}{{ s.status_name }}
+        {% endif %}
+      </option>
+      {% endfor %}
+    </select>
+    
+    <button type="submit" class="btn btn-primary">ค้นหา</button>
+    
+    {% if q or owner or status or date %}
+    <a href="{% url 'appointment_list' %}" class="btn btn-secondary">รีเซ็ต</a>
+    {% endif %}
+  </div>
+</form>
+
+
+<div class="table-responsive">
+  <table class="table table-hover table-bordered">
+    <thead>
+      <tr>
+        <th>รหัสนัดหมาย</th>
+        <th>สัตว์เลี้ยง</th>
+        <th>เจ้าของ</th>
+        <th>วันที่</th>
+        <th>เวลา</th>
+        <th>สัตวแพทย์</th>
+        <th>เหตุผล</th>
+        <th>สถานะ</th>
+        <th>⚙️ จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for app in appointments %}
+      <tr class="appointment-row">
+        <td><span class="badge bg-info">{{ app.appointment_id }}</span></td>
+        <td><strong style="color: #667eea;">{{ app.pet.pet_name }}</strong></td>
+        <td>{{ app.pet.owner.first_name }} {{ app.pet.owner.last_name }}</td>
+        <td>{{ app.appointment_date|date:"d/m/Y" }}</td>
+        <td><span class="time-badge">{{ app.appointment_time|time:"H:i" }}</span></td>
+        <td>{{ app.vet.vet_name|default:"ไม่มี" }}</td>
+        <td>{{ app.reason|truncatewords:5|default:"ไม่มี" }}</td>
+        <td>
+          <span class="status-badge status-{{ app.status.status_name|lower|slugify }}">
+            {% if app.status.status_name == 'Scheduled' %}⏳ รอดำเนินการ
+            {% elif app.status.status_name == 'Completed' %}✅ เสร็จแล้ว
+            {% else %}❌ ยกเลิก{% endif %}
+          </span>
+        </td>
+        <td>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="{% url 'edit_appointment' app.appointment_id %}" class="btn btn-sm btn-warning">✏️ แก้ไข</a>
+            {% if user_role != 'user' %}
+            <a href="javascript:void(0)" onclick="confirmDelete('{% url 'delete_appointment' app.appointment_id %}')" class="btn btn-sm btn-danger">🗑️ ลบ</a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="9" class="text-center">
+          <div class="empty-state" style="padding: 40px 20px;">
+            <div class="empty-state-icon">📅</div>
+            <p class="empty-state-text">ยังไม่มีข้อมูลนัดหมาย</p>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

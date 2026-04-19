@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.page-header h2 {
+  margin: 0;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+}
+
+.warning-box {
+  background: #fee2e2;
+  border: 2px solid #ff6b6b;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.warning-box strong {
+  color: #b91c1c;
+}
+
+.bill-row {
+  transition: all 0.3s ease;
+}
+
+.bill-row:hover {
+  background-color: #fef2f2 !important;
+}
+
+.amount-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.btn-pay {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  border: none;
+  color: white;
+}
+
+.btn-pay:hover {
+  background: linear-gradient(135deg, #ee5a6f, #ff6b6b);
+  color: white;
+}
+</style>
+
+<div class="page-header">
+  <h2>⏳ บิลค้างชำระ</h2>
+  <a href="{% url 'paid_bills' %}" class="btn btn-outline-success btn-lg">✅ ดูบิลที่ชำระแล้ว</a>
+</div>
+
+<div class="warning-box">
+  <strong>⚠️ การแจ้งเตือน:</strong> มีบิลอยู่ <strong>{{ bills|length }}</strong> รายการรอการชำระเงิน
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover table-bordered">
+    <thead>
+      <tr>
+        <th>🆔 Bill ID</th>
+        <th>🐾 สัตว์เลี้ยง</th>
+        <th>👤 เจ้าของ</th>
+        <th>💰 ยอดเงิน</th>
+        <th>📅 วันที่</th>
+        <th>⏱️ ระเยียมเวลา</th>
+        <th>⚙️ จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bill in bills %}
+      <tr class="bill-row">
+        <td><span class="badge bg-danger">{{ bill.bill_id }}</span></td>
+        <td><strong style="color: #ff6b6b;">{{ bill.record.pet.pet_name }}</strong></td>
+        <td>{{ bill.record.pet.owner.first_name }} {{ bill.record.pet.owner.last_name }}</td>
+        <td><span class="amount-tag">฿{{ bill.total_amount|floatformat:2 }}</span></td>
+        <td>{{ bill.bill_date|date:'d/m/Y' }}</td>
+        <td>
+          {% with now_date=bill.bill_date %}
+            <span style="color: #b91c1c; font-weight: bold;">
+              ⏳ กำลังรอชำระ
+            </span>
+          {% endwith %}
+        </td>
+        <td>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="{% url 'pay_bill' bill.bill_id %}" class="btn btn-sm btn-pay">💳 ชำระเงิน</a>
+            <a href="{% url 'bill_detail' bill.bill_id %}" class="btn btn-sm btn-info">👁️ ดู</a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center">
+          <div class="empty-state" style="padding: 40px 20px;">
+            <div class="empty-state-icon">🎉</div>
+            <p class="empty-state-text">ยินดีด้วย! ไม่มีบิลค้างชำระ</p>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

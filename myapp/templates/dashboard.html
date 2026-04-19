@@ -1,0 +1,817 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+.dashboard-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+  animation: slideDown 0.6s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-header h2 {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 4px 4px 6px rgba(0,0,0,0.2);
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  border-left: 5px solid #667eea;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%);
+  pointer-events: none;
+}
+
+.stat-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(102,126,234,0.2);
+  border-left-color: #764ba2;
+}
+
+.stat-card h4 {
+  color: #666;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.stat-card h2 {
+  color: #667eea;
+  font-size: 2.5rem;
+  margin: 0;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-card small {
+  color: #999;
+  font-size: 0.85rem;
+  display: block;
+  margin-top: 8px;
+}
+
+.stat-icon {
+  font-size: 2rem;
+  margin-right: 10px;
+}
+
+.card-owner { border-left-color: #FF6B6B; }
+.card-pet { border-left-color: #4ECDC4; }
+.card-scheduled { border-left-color: #45B7D1; }
+.card-completed { border-left-color: #96CEB4; }
+.card-cancelled { border-left-color: #FFEAA7; }
+.card-revenue { border-left-color: #DFE6E9; }
+.card-stock { border-left-color: #A29BFE; }
+
+.stat-card h2.color-owner { color: #FF6B6B; }
+.stat-card h2.color-pet { color: #4ECDC4; }
+.stat-card h2.color-scheduled { color: #45B7D1; }
+.stat-card h2.color-completed { color: #96CEB4; }
+.stat-card h2.color-cancelled { color: #FFA502; }
+.stat-card h2.color-revenue { color: #00B894; }
+.stat-card h2.color-stock { color: #A29BFE; }
+
+.medicine-table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.medicine-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.medicine-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.medicine-table tbody tr:hover {
+  background-color: #f8f9ff;
+}
+
+.medicine-table tbody tr:nth-child(odd) {
+  background-color: #fafbff;
+}
+
+h3.section-title {
+  color: #333;
+  font-weight: 700;
+  margin-top: 35px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #667eea;
+  display: inline-block;
+  position: relative;
+}
+
+.bills-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin-top: 25px;
+}
+
+@media (max-width: 1200px) {
+  .bills-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.appointments-section {
+  border-radius: 12px;
+  padding: 20px;
+  background: white;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  margin-bottom: 25px;
+}
+
+.appointments-table th, .appointments-table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.appointments-table td span.badge {
+  padding: 0.45em 0.75em;
+  font-size: 0.85rem;
+}
+
+.bills-section {
+  border-radius: 12px;
+  padding: 20px;
+  background: white;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.bills-section h4 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.paid-section h4 {
+  color: #00B894;
+  border-bottom: 3px solid #00B894;
+  padding-bottom: 10px;
+}
+
+.unpaid-section h4 {
+  color: #FF6B6B;
+  border-bottom: 3px solid #FF6B6B;
+  padding-bottom: 10px;
+}
+
+.bills-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px 0;
+}
+
+.bill-count-badge {
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 50px;
+  display: inline-block;
+}
+
+.paid-badge {
+  background: #d4edda;
+  color: #155724;
+}
+
+.unpaid-badge {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.bills-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.bills-list li {
+  margin-bottom: 10px;
+}
+
+.bill-item {
+  padding: 12px;
+  border-radius: 8px;
+  background: #f8faff;
+  border-left: 4px solid #667eea;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.bill-item:hover {
+  background: #eff6ff;
+  transform: translateX(5px);
+  box-shadow: 0 3px 10px rgba(102,126,234,0.2);
+}
+
+.bill-info {
+  flex: 1;
+}
+
+.bill-info strong {
+  display: block;
+  color: #333;
+  margin-bottom: 3px;
+}
+
+.bill-info small {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.bill-amount {
+  font-weight: 700;
+  color: #667eea;
+  margin-right: 10px;
+  min-width: 80px;
+  text-align: right;
+}
+
+.bill-action {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.bill-action:hover {
+  background: #764ba2;
+  transform: scale(1.05);
+}
+
+.bill-action.pay {
+  background: #FF6B6B;
+}
+
+.bill-action.pay:hover {
+  background: #ee5a6f;
+}
+
+.bill-action.view {
+  background: #00B894;
+}
+
+.bill-action.view:hover {
+  background: #00a37e;
+}
+
+.empty-bills {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-style: italic;
+}
+
+.bills-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bills-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.bills-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.bills-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.row {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.calendar-grid {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.calendar-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.calendar-header {
+  background: #f0f5ff;
+  color: #084298;
+  font-weight: 700;
+}
+
+.calendar-cell {
+  min-height: 90px;
+  background: #fafbff;
+  padding: 6px;
+  font-size: 0.82rem;
+  border: 1px solid #e7eaf3;
+  position: relative;
+  overflow: hidden;
+}
+
+.calendar-cell.muted {
+  background: #f4f5f8;
+  color: #9aa5b8;
+}
+
+.date-number {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.calendar-cell .badge {
+  font-size: 0.63rem;
+  margin-bottom: 2px;
+  display: inline-flex;
+}
+
+.calendar-row .badge { display:block; margin-top:2px; }
+
+.calendar-controls .btn {
+  margin-right: 6px;
+}
+
+.appointment-badge-btn {
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+.appointment-badge-btn .badge {
+  width: 100%;
+  display: block;
+  text-align: left;
+  margin-bottom: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.appointment-badge-btn .badge:hover {
+  filter: brightness(0.95);
+  transform: translateX(2px);
+}
+
+.appointment-modal-body {
+  padding: 20px;
+}
+
+.appointment-detail-row {
+  display: flex;
+  margin-bottom: 15px;
+  gap: 15px;
+}
+
+.appointment-detail-label {
+  font-weight: 700;
+  color: #667eea;
+  min-width: 120px;
+}
+
+.appointment-detail-value {
+  flex: 1;
+  color: #333;
+}
+
+.appointment-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
+
+.appointment-action-btn {
+  flex: 1;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.appointment-action-btn.proceed {
+  background: #667eea;
+  color: white;
+}
+
+.appointment-action-btn.proceed:hover {
+  background: #764ba2;
+  transform: translateY(-2px);
+}
+
+.appointment-action-btn.complete {
+  background: #96CEB4;
+  color: white;
+}
+
+.appointment-action-btn.complete:hover {
+  background: #7fb8a3;
+  transform: translateY(-2px);
+}
+
+.appointment-action-btn.cancel {
+  background: #FF6B6B;
+  color: white;
+}
+
+.appointment-action-btn.cancel:hover {
+  background: #ee5a6f;
+  transform: translateY(-2px);
+}
+
+.appointment-nav-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  margin-top: 15px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.appointment-nav-btn:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  color: white;
+  text-decoration: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.row:nth-child(1) { animation-delay: 0.1s; }
+.row:nth-child(2) { animation-delay: 0.2s; }
+</style>
+
+<div class="dashboard-header">
+  <h2>📊 Dashboard Vet Clinic</h2>
+</div>
+
+<div class="card mb-3 p-3" style="border-left: 5px solid #667eea; background: #f8faff;">
+  <h5 class="mb-2" style="font-weight: 700;">📍 ข้อมูลร้าน Vet Clinic</h5>
+  <p class="mb-1">มหาวิทยาลัยศรีปทุม</p>
+  <p class="mb-1">ที่อยู่: 2410 2 ถ. พหลโยธิน แขวงเสนานิคม เขตจตุจักร กรุงเทพมหานคร 10900</p>
+  <p class="mb-1">โทร: <strong>095-715-4910</strong></p>
+  <p class="mb-1">Line: <strong>@truefriendvet</strong></p>
+  <p class="mb-0">Facebook: <strong>True Friend Vet Clinic</strong></p>
+</div>
+
+<div class="calendar-controls mb-3 d-flex justify-content-between align-items-center">
+  <div>
+    <a class="btn btn-outline-secondary btn-sm" href="?month={{ prev_month.month }}&year={{ prev_month.year }}">← {{ prev_month_name }} {{ prev_month.year }}</a>
+    <a class="btn btn-outline-secondary btn-sm" href="?month={{ next_month.month }}&year={{ next_month.year }}">{{ next_month_name }} {{ next_month.year }} →</a>
+  </div>
+  <h4 class="mb-0">{{ calendar_month_name }} {{ calendar_year }}</h4>
+</div>
+
+<div class="calendar-grid card mb-4 p-3">
+  <div class="calendar-row calendar-header">
+    <div>อา.</div><div>จ.</div><div>อ.</div><div>พ.</div><div>พฤ.</div><div>ศ.</div><div>ส.</div>
+  </div>
+  {% for week in calendar_grid %}
+  <div class="calendar-row">
+    {% for day in week %}
+    <div class="calendar-cell {% if not day.is_current_month %}muted{% endif %}">
+      <div class="date-number">{{ day.date.day }}</div>
+      {% if day.apps %}
+      <div class="badges">
+        {% for app in day.apps %}
+        <button type="button" class="appointment-badge-btn" onclick="showAppointmentModal('{{ app.appointment_id }}')">
+          <span class="badge {% if app.status.status_name == 'Scheduled' %}bg-info{% elif app.status.status_name == 'Completed' %}bg-success{% elif app.status.status_name == 'Cancelled' %}bg-danger{% else %}bg-secondary{% endif %}">
+            {% if app.status.status_name == 'Scheduled' %}รอดำเนินการ
+            {% elif app.status.status_name == 'Completed' %}เสร็จแล้ว
+            {% elif app.status.status_name == 'Cancelled' %}ยกเลิก
+            {% else %}{{ app.status.status_name }}{% endif %}
+          </span>
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row">
+  <div class="col-md-3">
+    <div class="stat-card card-owner">
+      <h4>👤 ลูกค้า</h4>
+      <h2 class="color-owner">{{ total_owners }}</h2>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="stat-card card-pet">
+      <h4>🐾 สัตว์เลี้ยง</h4>
+      <h2 class="color-pet">{{ total_pet }}</h2>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="stat-card card-scheduled">
+      <h4>📅 นัดหมายที่รอ</h4>
+      <h2 class="color-scheduled">{{ scheduled_appointments }}</h2>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="stat-card card-completed">
+      <h4>✅ นัดหมายเสร็จ</h4>
+      <h2 class="color-completed">{{ completed_appointments }}</h2>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="stat-card card-cancelled">
+      <h4>❌ นัดหมายยกเลิก</h4>
+      <h2 class="color-cancelled">{{ cancelled_appointments }}</h2>
+    </div>
+  </div>
+</div>
+
+
+<h3 class="section-title">สถานะบิล</h3>
+
+<div class="bills-container">
+  <!-- PAID BILLS SECTION -->
+  <div class="bills-section paid-section">
+    <h4>✅ บิลที่ชำระแล้ว</h4>
+    <div class="bills-stats">
+      <span>จำนวนบิล:</span>
+      <span class="bill-count-badge paid-badge">{{ paid_bills_count }}</span>
+    </div>
+    
+    {% if paid_bills %}
+    <ul class="bills-list">
+      {% for bill in paid_bills %}
+      <li>
+        <div class="bill-item">
+          <div class="bill-info">
+            <strong>{{ bill.bill_id }}</strong>
+            <small>สัตว์เลี้ยง: {{ bill.record.pet.pet_name }} | เจ้าของ: {{ bill.record.pet.owner.first_name }} {{ bill.record.pet.owner.last_name }}</small>
+            <small style="display: block; margin-top: 3px;">วันที่: {{ bill.bill_date|date:"d/m/Y" }} | ช่วงการชำระ: {{ bill.payment_method.method_name }}</small>
+          </div>
+          <span class="bill-amount">{{ bill.total_amount|floatformat:0 }} ฿</span>
+          <a href="{% url 'bill_detail' bill.bill_id %}" class="bill-action view">📋 ดูรายละเอียด</a>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-bills">📭 ไม่มีบิลที่ชำระแล้ว</div>
+    {% endif %}
+  </div>
+
+  <!-- UNPAID BILLS SECTION -->
+  <div class="bills-section unpaid-section">
+    <h4>⏳ บิลที่ยังไม่ชำระ</h4>
+    <div class="bills-stats">
+      <span>จำนวนบิล:</span>
+      <span class="bill-count-badge unpaid-badge">{{ unpaid_bills_count }}</span>
+    </div>
+    
+    {% if unpaid_bills %}
+    <ul class="bills-list">
+      {% for bill in unpaid_bills %}
+      <li>
+        <div class="bill-item">
+          <div class="bill-info">
+            <strong>{{ bill.bill_id }}</strong>
+            <small>สัตว์เลี้ยง: {{ bill.record.pet.pet_name }} | เจ้าของ: {{ bill.record.pet.owner.first_name }} {{ bill.record.pet.owner.last_name }}</small>
+            <small style="display: block; margin-top: 3px;">วันที่: {{ bill.bill_date|date:"d/m/Y" }}</small>
+          </div>
+          <span class="bill-amount">{{ bill.total_amount|floatformat:0 }} ฿</span>
+          <a href="{% url 'pay_bill' bill.bill_id %}" class="bill-action pay">💰 ชำระเงิน</a>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-bills">🎉 ไม่มีบิลที่ยังไม่ชำระ</div>
+    {% endif %}
+  </div>
+</div>
+
+
+<h3 class="section-title">💊 ยาที่ใช้บ่อย Top 5</h3>
+<table class="table table-hover medicine-table">
+  <thead>
+    <tr>
+      <th>ยา</th>
+      <th class="text-right">จำนวน</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in most_used %}
+    <tr>
+      <td><strong>{{ m.medicine__medicine_name }}</strong></td>
+      <td class="text-right">
+        <span class="badge bg-info" style="font-size: 1rem;">{{ m.total_qty }}</span>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="2" class="text-center text-muted">ไม่มีข้อมูลการใช้ยา</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Appointment Details Modal -->
+<div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h5 class="modal-title" id="appointmentModalLabel">📅 รายละเอียดนัดหมาย</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body appointment-modal-body">
+        <div id="appointmentContent">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden CSRF token for AJAX requests -->
+{% csrf_token %}
+
+<script>
+// Get CSRF token from hidden input or cookie
+function getCsrfToken() {
+  const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+  if (tokenInput) {
+    return tokenInput.value;
+  }
+  
+  // Fallback: try to get from cookie
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'csrftoken') {
+      return decodeURIComponent(value);
+    }
+  }
+  return '';
+}
+
+function showAppointmentModal(appointmentId) {
+  const modal = new bootstrap.Modal(document.getElementById('appointmentModal'));
+  const contentDiv = document.getElementById('appointmentContent');
+  
+  // Show loading state
+  contentDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+  modal.show();
+  
+  // Fetch appointment details
+  console.log(`Fetching appointment details for ID: ${appointmentId}`);
+  fetch(`/appointments/detail/${appointmentId}/`)
+    .then(response => {
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Response data:', data);
+      if (data.success) {
+        const app = data.appointment;
+        contentDiv.innerHTML = `
+          <div class="appointment-detail-row">
+            <span class="appointment-detail-label">รหัสนัดหมาย:</span>
+            <span class="appointment-detail-value"><strong>${app.appointment_id}</strong></span>
+          </div>
+          <div class="appointment-detail-row">
+            <span class="appointment-detail-label">สัตว์เลี้ยง:</span>
+            <span class="appointment-detail-value">${app.pet_name}</span>
+          </div>
+          <div class="appointment-detail-row">
+            <span class="appointment-detail-label">เจ้าของ:</span>
+            <span class="appointment-detail-value">${app.owner_name}</span>
+          </div>
+          <div class="appointment-detail-row">
+            <span class="appointment-detail-label">โทรศัพท์:</span>
+            <span class="appointment-detail-value">${app.phone}</span>
+          </div>
+          <div class="appointment-detail-row">
+            <span class="appointment-detail-label">วันที่:</span>
+            <span class="appointment-detail-value">${app.date} เวลา ${app.time}</span>
+          </div>
+          <div class="appointment-detail-row">
+            <span class="appointment-detail-label">สัตวแพทย์:</span>
+            <span class="appointment-detail-value">${app.vet_name}</span>
+          </div>
+          <div class="appointment-detail-row">
+            <span class="appointment-detail-label">เหตุผล:</span>
+            <span class="appointment-detail-value">${app.reason}</span>
+          </div>
+          <div class="appointment-detail-row">
+            <span class="appointment-detail-label">หมายเหตุ:</span>
+            <span class="appointment-detail-value">${app.note || '-'}</span>
+          </div>
+          <div class="appointment-detail-row">
+            <span class="appointment-detail-label">สถานะ:</span>
+            <span class="appointment-detail-value">
+              <span class="badge ${app.status === 'Scheduled' ? 'bg-info' : app.status === 'Completed' ? 'bg-success' : 'bg-danger'}">
+                ${app.status === 'Scheduled' ? '⏳ รอดำเนินการ' : app.status === 'Completed' ? '✅ เสร็จแล้ว' : '❌ ยกเลิก'}
+              </span>
+            </span>
+          </div>
+          <div style="text-align: center; margin-top: 20px;">
+            <a href="/appointments/?q=${app.appointment_id}" class="appointment-nav-btn">📋 ไปหน้านัดหมาย</a>
+          </div>
+        `;
+      } else {
+        console.error('API returned error:', data.error);
+        contentDiv.innerHTML = `<div class="alert alert-danger">❌ ไม่สามารถโหลดข้อมูลนัดหมาย<br><small>${data.error || 'Unknown error'}</small></div>`;
+      }
+    })
+    .catch(error => {
+      console.error('Fetch error:', error);
+      contentDiv.innerHTML = `<div class="alert alert-danger">❌ เกิดข้อผิดพลาด<br><small>${error.message}</small></div>`;
+    });
+}
+</script>
+
+{% endblock %}

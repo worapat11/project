@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.page-header h2 {
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+}
+
+.btn-add {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  color: white;
+}
+
+.btn-add:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  color: white;
+}
+
+.search-bar {
+  margin-bottom: 20px;
+}
+
+.medicine-row {
+  transition: all 0.3s ease;
+}
+
+.medicine-row:hover {
+  background-color: #f0f7ff !important;
+}
+
+.stock-badge {
+  border-radius: 50px;
+  padding: 6px 12px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-block;
+}
+
+.stock-low {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.stock-ok {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.price-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+</style>
+
+<div class="page-header">
+  <div>
+    <h2>สต็อกสินค้า (ยา / อาหารสัตว์)</h2>
+    <p class="mb-0" style="font-size:1rem; color:#555;">รวมทั้งหมดในสต็อก: <strong>{{ total_stock|default:0 }} ชิ้น</strong></p>
+  </div>
+  {% if user_role != 'user' %}
+  <a href="{% url 'add_medicine' %}" class="btn btn-add btn-lg">➕ เพิ่มสินค้า</a>
+  {% endif %}
+</div>
+
+<div class="search-bar">
+  <form method="get" class="row g-3">
+    <div class="col-md-5">
+      <input type="text" name="q" value="{{ q|default:'' }}" class="form-control" placeholder="🔍 ค้นหาจากรหัสสินค้า ชื่อสินค้า ผู้จัดหา...">
+    </div>
+    <div class="col-md-3">
+      <select name="type_filter" class="form-control">
+        <option value="">ประเภท - ทั้งหมด</option>
+        {% for value, display in type_choices %}
+        <option value="{{ value }}" {% if type_filter == value %}selected{% endif %}>{{ display }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">🔍 ค้นหา</button>
+    </div>
+    {% if q or type_filter %}
+    <div class="col-md-2">
+      <a href="{% url 'medicines' %}" class="btn btn-secondary w-100">✖️ รีเซ็ต</a>
+    </div>
+    {% endif %}
+  </form>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover table-bordered">
+    <thead>
+      <tr>
+        <th>รหัสสินค้า</th>
+        <th>ชื่อ</th>
+        <th>ประเภท</th>
+        <th>ผู้จัดหา</th>
+        <th>ราคา</th>
+        <th>คงคลัง</th>
+        <th>สถานะ</th>
+        <th>⚙️ จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in medicines %}
+      <tr class="medicine-row">
+        <td><span class="badge bg-info">{{ item.medicine.medicine_id }}</span></td>
+        <td><strong style="color: #667eea;">{{ item.medicine.medicine_name }}</strong></td>
+        <td>{{ item.medicine.type|default:"ไม่มี" }}</td>
+        <td>{{ item.medicine.supplier.supplier_name|default:"ไม่มี" }}</td>
+        <td><span class="price-tag">฿{{ item.medicine.price|floatformat:2 }}</span></td>
+        <td><strong>{{ item.stock }}</strong></td>
+        <td>
+          {% if item.is_low %}
+            <span class="stock-badge stock-low">🔴 ต่ำกว่า 10</span>
+          {% else %}
+            <span class="stock-badge stock-ok">🟢 ปกติ</span>
+          {% endif %}
+        </td>
+        <td>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            {% if user_role != 'user' %}
+            <a href="{% url 'edit_medicine' item.medicine.medicine_id %}" class="btn btn-sm btn-warning">✏️ แก้ไข</a>
+            <a href="javascript:void(0)" onclick="confirmDelete('{% url 'delete_medicine' item.medicine.medicine_id %}')" class="btn btn-sm btn-danger">🗑️ ลบ</a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="text-center">
+          <div class="empty-state" style="padding: 40px 20px;">
+            <div class="empty-state-icon">💊</div>
+            <p class="empty-state-text">ยังไม่มีข้อมูลสินค้า</p>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

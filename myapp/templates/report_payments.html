@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="page-title">รายงานการชำระเงิน <button class="btn btn-primary btn-sm d-print-none" onclick="window.print()" style="float: right;">🖨️ ปริ้น</button></h2>
+
+<form method="get" class="row g-3 mb-3 d-print-none">
+    <div class="col-md-3">
+        <label class="form-label">วันที่เริ่มต้น</label>
+        <input type="date" name="start_date" value="{{ start_date }}" class="form-control" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">วันที่สิ้นสุด</label>
+        <input type="date" name="end_date" value="{{ end_date }}" class="form-control" />
+    </div>
+
+    <div class="col-md-6 align-self-end">
+        <button class="btn btn-primary">กรอง</button>
+        <a class="btn btn-secondary" href="{% url 'report_payments' %}">รีเซ็ต</a>
+    </div>
+</form>
+
+<table class="table table-bordered">
+<thead><tr><th>รหัสบิล</th><th>รหัสประวัติ</th><th>สัตว์เลี้ยง</th><th>เจ้าของ</th><th>วิธีชำระ</th><th>ราคา</th><th>วันที่</th></tr></thead>
+<tbody>
+{% for bill in bills %}
+<tr>
+<td><a href="{% url 'bill_detail' bill.bill_id %}">{{ bill.bill_id }}</a></td>
+<td>{{ bill.record.record_id }}</td>
+<td>{{ bill.record.pet.pet_name }}</td>
+<td>{{ bill.record.pet.owner.first_name }} {{ bill.record.pet.owner.last_name }}</td>
+<td>{{ bill.payment_method.method_name }}</td>
+<td>{{ bill.total_amount }}</td>
+<td>{{ bill.bill_date|date:'Y-m-d' }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="7">ไม่พบบิลที่ชำระในช่วงนี้</td></tr>
+{% endfor %}
+</tbody>
+<tfoot>
+<tr>
+<th colspan="5">รวม</th>
+<th>{{ total_amount }}</th>
+<th></th>
+</tr>
+</tfoot>
+</table>
+{% endblock %}

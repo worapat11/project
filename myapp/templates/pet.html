@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.page-header h2 {
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+}
+
+.btn-add {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  color: white;
+}
+
+.btn-add:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  color: white;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: end;
+}
+
+.pet-row {
+  transition: all 0.3s ease;
+}
+
+.pet-row:hover {
+  background-color: #f0f7ff !important;
+}
+
+.pet-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid #667eea;
+}
+
+.pet-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-male {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-female {
+  background-color: #fce7f3;
+  color: #be123c;
+}
+</style>
+
+<div class="page-header">
+  <h2>สัตว์เลี้ยง</h2>
+  <a href="{% url 'add_pet' %}" class="btn btn-add btn-lg">➕ เพิ่มสัตว์เลี้ยง</a>
+</div>
+
+<form method="get" class="search-bar row g-2">
+  <div class="col-12 col-md-8">
+    <input type="text" name="q" value="{{ q|default:'' }}" class="form-control" placeholder="🔍 ค้นหาสัตว์เลี้ยง...">
+  </div>
+  <div class="col-12 col-md-3 d-flex gap-2">
+    <button type="submit" class="btn btn-primary flex-fill">ค้นหา</button>
+    {% if q or species_filter %}
+    <a href="{% url 'pet_list' %}" class="btn btn-secondary flex-fill">รีเซ็ต</a>
+    {% endif %}
+  </div>
+    <div class="col-12 col-md-3">
+    <select name="species" class="form-select">
+      <option value="">ทุกชนิดสัตว์</option>
+      {% for species in species_list %}
+      <option value="{{ species.species_id }}" {% if species_filter == species.species_id %}selected{% endif %}>{{ species.species_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table table-hover table-bordered">
+    <thead>
+      <tr>
+        <th>รหัสสัตว์เลี้ยง</th>
+        <th>รูป</th>
+        <th>ชื่อ</th>
+        <th>เจ้าของ</th>
+        <th>ชนิดสัตว์</th>
+        <th>สายพันธุ์</th>
+        <th>เพศ</th>
+        <th>อายุ</th>
+        <th>น้ำหนัก (กก.)</th>
+        <th>⚙️ จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in pet %}
+      <tr class="pet-row">
+        <td><strong class="badge bg-info">{{ row.pet.pet_id }}</strong></td>
+        <td>
+          {% if row.image_url %}
+            <img src="{{ row.image_url }}" class="pet-image" alt="{{ row.pet.pet_name }}">
+          {% else %}
+            <div class="pet-image" style="background: #f0f7ff; display: flex; align-items: center; justify-content: center;">🐾</div>
+          {% endif %}
+        </td>
+        <td><strong style="color: #667eea;">{{ row.pet.pet_name }}</strong></td>
+        <td>{{ row.pet.owner.first_name }} {{ row.pet.owner.last_name }}</td>
+        <td><span class="badge bg-info">{{ row.pet.species.species_name }}</span></td>
+        <td>{{ row.pet.breed }}</td>
+        <td>
+          {% if row.pet.gender == 'M' or row.pet.gender == 'Male' or row.pet.gender == 'male' %}
+            <span class="pet-badge badge-male">♂ ผู้</span>
+          {% elif row.pet.gender == 'F' or row.pet.gender == 'Female' or row.pet.gender == 'female' %}
+            <span class="pet-badge badge-female">♀ แม่</span>
+          {% else %}
+            <span class="pet-badge" style="background: #999; color: white;">ไม่ระบุ</span>
+          {% endif %}
+        </td>
+        <td>{{ row.age }}</td>
+        <td>{{ row.pet.weight|default:"ไม่มี" }}</td>
+        <td>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="{% url 'edit_pet' row.pet.pet_id %}" class="btn btn-sm btn-warning">✏️ แก้ไข</a>
+            {% if user_role != 'user' %}
+            <a href="javascript:void(0)" onclick="confirmDelete('{% url 'delete_pet' row.pet.pet_id %}')" class="btn btn-sm btn-danger">🗑️ ลบ</a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="9" class="text-center">
+          <div class="empty-state" style="padding: 40px 20px;">
+            <div class="empty-state-icon">🐾</div>
+            <p class="empty-state-text">ยังไม่มีข้อมูลสัตว์เลี้ยง</p>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

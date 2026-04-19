@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-5">
+
+<div class="col-md-5">
+
+<div class="card p-4">
+
+<h2 class="text-center mb-4">🏥 True Friend Vet Clinic</h2>
+<h4 class="text-center mb-4">เข้าสู่ระบบ</h4>
+
+{% if form.non_field_errors %}
+<div class="alert alert-danger">
+{% for error in form.non_field_errors %}
+<p>{{ error }}</p>
+{% endfor %}
+</div>
+{% endif %}
+
+<form method="post">
+{% csrf_token %}
+
+<div class="mb-3">
+<label class="form-label">ชื่อผู้ใช้</label>
+<input type="text" name="username" class="form-control {% if form.username.errors %}is-invalid{% endif %}" placeholder="Username" required>
+{% if form.username.errors %}
+<div class="invalid-feedback">{{ form.username.errors.0 }}</div>
+{% endif %}
+</div>
+
+<div class="mb-3">
+<label class="form-label">รหัสผ่าน</label>
+<input type="password" name="password" class="form-control {% if form.password.errors %}is-invalid{% endif %}" placeholder="Password" required>
+{% if form.password.errors %}
+<div class="invalid-feedback">{{ form.password.errors.0 }}</div>
+{% endif %}
+</div>
+
+<button type="submit" class="btn btn-primary w-100">เข้าสู่ระบบ</button>
+
+</form>
+
+<hr>
+
+<p class="text-center text-muted small">📞 ติดต่อผู้ดูแลระบบและหัวหน้าแผนก หากลืมรหัสผ่าน</p>
+</div>
+
+</div>
+
+<footer class="text-center" style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(59,130,246,0.08); border-top: 1px solid rgba(59,130,246,0.25); padding: 10px 12px; z-index: 2000;">
+  <div class="container">
+    <h6 class="mb-1">📬 ติดต่อเรา</h6>
+    <small class="d-block">ร้าน: <strong>Vet Clinic</strong> | มหาวิทยาลัยศรีปทุม</small>
+    <small class="d-block">ที่อยู่: 2410 2 ถ. พหลโยธิน แขวงเสนานิคม เขตจตุจักร กรุงเทพมหานคร 10900</small>
+    <small class="d-block">โทร: <strong>095-715-4910</strong> | Line: <strong>@truefriendvet</strong> | Facebook: <strong>True Friend Vet Clinic</strong></small>
+  </div>
+</footer>
+
+{% endblock %}

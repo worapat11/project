@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>เพิ่มแพทย์</h2>
+  <div class="card p-4">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">รูปแพทย์</label>
+        <input type="file" name="photo" id="vet-photo-input" accept="image/*" class="form-control">
+        <img id="vet-photo-preview" src="" alt="Preview" class="img-fluid mt-2" style="max-width: 150px; display:none;" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">ชื่อแพทย์</label>
+        <input type="text" name="vet_name" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">ตำแหน่ง</label>
+        <select name="specialization" class="form-select" required>
+          <option value="" disabled selected>เลือกตำแหน่ง</option>
+          {% for sp in specializations %}
+            <option value="{{ sp }}">{{ sp }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">เบอร์โทร</label>
+        <input type="text" name="phone" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-success">บันทึก</button>
+      <a href="{% url 'vet_list' %}" class="btn btn-secondary">กลับไป</a>
+    </form>
+  </div>
+</div>
+
+<script>
+  const vetPhotoInput = document.getElementById('vet-photo-input');
+  const vetPhotoPreview = document.getElementById('vet-photo-preview');
+  if (vetPhotoInput && vetPhotoPreview) {
+    vetPhotoInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        vetPhotoPreview.src = e.target.result;
+        vetPhotoPreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+</script>
+{% endblock %}

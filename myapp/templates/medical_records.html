@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load dict_extras %}
+
+{% block content %}
+
+<style>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.page-header h2 {
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+}
+
+.btn-add {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  color: white;
+}
+
+.btn-add:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  color: white;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.record-row {
+  transition: all 0.3s ease;
+}
+
+.record-row:hover {
+  background-color: #f0f7ff !important;
+}
+
+.medication-tag {
+  display: inline-block;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin: 1px;
+  white-space: nowrap;
+}
+
+.medications-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-height: 60px;
+  overflow-y: auto;
+}
+
+.table-responsive {
+  font-size: 1rem;
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table th {
+  font-weight: 600;
+  white-space: normal;
+  padding: 15px 12px;
+  font-size: 1.05rem;
+}
+
+.table {
+  width: 100%;
+  min-width: 100%;
+}
+
+.table td {
+  vertical-align: middle;
+  padding: 12px;
+  font-size: 0.95rem;
+  white-space: normal;
+}
+</style>
+
+<div class="page-header">
+  <h2>ประวัติการรักษา</h2>
+  <a href="{% url 'add_medical_record' %}" class="btn btn-add btn-lg">➕ เพิ่มประวัติการรักษา</a>
+</div>
+
+<form method="get" class="search-bar">
+  <div class="flex-grow-1">
+    <input type="text" name="q" value="{{ q|default:'' }}" class="form-control" placeholder="🔍 ค้นหาประวัติการรักษา...">
+  </div>
+  <button type="submit" class="btn btn-primary">ค้นหา</button>
+  {% if q %}
+  <a href="{% url 'medical_records' %}" class="btn btn-secondary">รีเซ็ต</a>
+  {% endif %}
+</form>
+
+<div class="table-responsive">
+  <table class="table table-hover table-bordered">
+    <thead>
+      <tr>
+        <th>🆔 รหัสประวัติ</th>
+        <th>🐾 สัตว์เลี้ยง</th>
+        <th>👨‍⚕️ สัตวแพทย์</th>
+        <th>🤒 อาการ</th>
+        <th>💊 การวินิจฉัย</th>
+        <th>🏥 การรักษา</th>
+        <th>💉 ยา</th>
+        <th>💰 บิล</th>
+        <th>📅 วันที่</th>
+        <th>⚙️ จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in records %}
+      <tr class="record-row">
+        <td><span class="badge bg-info">{{ record.record_id }}</span></td>
+        <td><strong style="color: #667eea;">{{ record.pet.pet_name }}</strong></td>
+        <td>{{ record.vet.vet_name|default:"ไม่มี" }}</td>
+        <td>{{ record.symptoms|truncatewords:5|default:"ไม่มี" }}</td>
+        <td>{{ record.diagnosis|truncatewords:5|default:"ไม่มี" }}</td>
+        <td>{{ record.treatment|truncatewords:5|default:"ไม่มี" }}</td>
+        <td>
+          <div class="medications-container">
+            {% for treatment in record.treatments_set.all|slice:":3" %}
+              <span class="medication-tag">{{ treatment.medicine.medicine_name }}</span>
+            {% endfor %}
+            {% if record.treatments_set.all|length > 3 %}
+              <span class="medication-tag" style="background: #f3f4f6; color: #6b7280;">+{{ record.treatments_set.all|length|add:"-3" }}</span>
+            {% endif %}
+            {% if not record.treatments_set.all %}
+              <span style="color: #999;">ไม่มี</span>
+            {% endif %}
+          </div>
+        </td>
+        <td>
+          {% with record_bill=bills|get_item:record.record_id %}
+            {% if record_bill %}
+              <a href="{% url 'bill_detail' record_bill.bill_id %}" class="badge bg-success">ดูบิล</a>
+            {% else %}
+              <span class="badge bg-secondary">ยังไม่มี</span>
+            {% endif %}
+          {% endwith %}
+        </td>
+        <td>{{ record.visit_date|date:"d/m/Y" }}</td>
+        <td>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            {% if record.record_id in paid_bills %}
+              <span class="badge bg-secondary" title="ไม่สามารถแก้ไขได้ - บิลถูกจ่ายแล้ว">🔒 ล็อก</span>
+              <span class="text-muted" style="font-size: 0.9rem;">บิลถูกจ่ายแล้ว</span>
+            {% else %}
+              <a href="{% url 'edit_medical_record' record.record_id %}" class="btn btn-sm btn-warning">✏️ แก้ไข</a>
+              {% if user_role != 'user' %}
+              <a href="javascript:void(0)" onclick="confirmDelete('{% url 'delete_medical_record' record.record_id %}')" class="btn btn-sm btn-danger">🗑️ ลบ</a>
+              {% endif %}
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="10" class="text-center">
+          <div class="empty-state" style="padding: 40px 20px;">
+            <div class="empty-state-icon">📋</div>
+            <p class="empty-state-text">ยังไม่มีข้อมูลประวัติการรักษา</p>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

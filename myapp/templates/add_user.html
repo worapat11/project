@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+.form-container {
+  max-width: 600px;
+  margin: 30px auto;
+}
+
+.card-header-custom {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px 12px 0 0;
+  margin-bottom: 0;
+}
+
+.card-header-custom h3 {
+  margin: 0;
+  font-weight: bold;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-section h5 {
+  color: #667eea;
+  font-weight: bold;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #667eea;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-control, .form-select {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-text.text-muted {
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.btn-container {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  border: none;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
+  color: white;
+}
+
+.alert {
+  border-radius: 8px;
+  border: none;
+  margin-bottom: 20px;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.alert ul {
+  margin-bottom: 0;
+  padding-left: 20px;
+}
+
+.breadcrumb-custom {
+  background-color: transparent;
+  padding: 0 0 20px 0;
+}
+</style>
+
+<div class="form-container">
+  <nav class="breadcrumb-custom">
+    <a href="{% url 'dashboard' %}">หน้าแรก</a>
+    <span> > </span>
+    <a href="{% url 'user_list' %}">จัดการผู้ใช้งาน</a>
+    <span> > </span>
+    <span>เพิ่มผู้ใช้งาน</span>
+  </nav>
+
+  {% if errors %}
+  <div class="alert alert-danger alert-dismissible fade show">
+    <strong>⚠️ พบข้อผิดพลาด:</strong>
+    <ul>
+      {% for error in errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="card-header-custom">
+      <h3>➕ สร้างผู้ใช้งานใหม่</h3>
+    </div>
+
+    <div class="card-body p-4">
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- ข้อมูลพื้นฐาน -->
+        <div class="form-section">
+          <h5>📋 ข้อมูลพื้นฐาน</h5>
+
+          <div class="form-group">
+            <label for="username">ชื่อผู้ใช้ <span style="color: red;">*</span></label>
+            <input type="text" class="form-control" id="username" name="username" 
+                   value="{{ form_data.username }}" placeholder="username" required>
+            <div class="form-text text-muted">ใช้เฉพาะตัวอักษร ตัวเลข และ underscore</div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">รหัสผ่าน <span style="color: red;">*</span></label>
+            <input type="password" class="form-control" id="password" name="password" 
+                   placeholder="••••••••" required minlength="6">
+            <div class="form-text text-muted">ต้องมีอย่างน้อย 6 ตัวอักษร</div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">อีเมล</label>
+            <input type="email" class="form-control" id="email" name="email" 
+                   value="{{ form_data.email }}" placeholder="user@example.com">
+          </div>
+        </div>
+
+        <!-- ข้อมูลส่วนตัว -->
+        <div class="form-section">
+          <h5>👤 ข้อมูลส่วนตัว</h5>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="first_name">ชื่อ</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" 
+                       value="{{ form_data.first_name }}" placeholder="ชื่อ">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="last_name">นามสกุล</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" 
+                       value="{{ form_data.last_name }}" placeholder="นามสกุล">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- สิทธิ์อนุญาต -->
+        <div class="form-section">
+          <h5>🔐 สิทธิ์อนุญาต</h5>
+
+          <div class="form-group">
+            <label for="role">บทบาท <span style="color: red;">*</span></label>
+            <select class="form-select" id="role" name="role" required>
+              <option value="user">👁️ User (ผู้ใช้ปกติ) - เข้าถึงข้อมูลพื้นฐาน</option>
+              <option value="admin" selected>🔐 Admin (ผู้ดูแลระบบ) - สิทธิ์เต็ม</option>
+            </select>
+            <div class="form-text text-muted">โปรดเลือกบทบาทที่เหมาะสมสำหรับผู้ใช้งาน</div>
+          </div>
+        </div>
+
+        <div class="btn-container">
+          <button type="submit" class="btn-submit">💾 สร้างผู้ใช้งาน</button>
+          <a href="{% url 'user_list' %}" class="btn-cancel">❌ ยกเลิก</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

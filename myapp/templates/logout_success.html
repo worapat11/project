@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-5">
+<div class="col-md-5">
+<div class="card p-4 border-success">
+<div class="text-center mb-4">
+<h2>✅ ออกจากระบบเรียบร้อยแล้ว</h2>
+</div>
+
+<p class="text-center text-muted mb-4">
+ขอบคุณที่ใช้งานระบบ True Friend Vet Clinic
+</p>
+
+<div class="alert alert-info" role="alert">
+<strong>💡 ข้อแนะนำด้านความปลอดภัย:</strong>
+<ul class="mb-0 mt-2">
+<li>ปิดเบราว์เซอร์เพื่อป้องกันการเข้าถึงที่ไม่ได้รับอนุญาต</li>
+<li>อย่าเปิดเว็บไซต์นี้บนคอมพิวเตอร์ของคนอื่น</li>
+<li>ต้องการความช่วยเหลือ? ติดต่อผู้ดูแลระบบ</li>
+</ul>
+</div>
+
+<div class="d-grid gap-2">
+<a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+🔐 เข้าสู่ระบบอีกครั้ง
+</a>
+</div>
+
+<hr class="my-3">
+
+<p class="text-center text-muted small">
+🐾 <strong>True Friend Vet Clinic</strong><br>
+สัตวแพทยศาสตร์ที่ดีที่สุดสำหรับสัตว์เลี้ยงของคุณ
+</p>
+
+</div>
+</div>
+</div>
+
+{% endblock %}

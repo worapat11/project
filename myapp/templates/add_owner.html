@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card main-card p-4 mt-3">
+<h2 class="mb-3">เพิ่มลูกค้า</h2>
+
+{% if error_messages %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <strong>❌ เกิดข้อผิดพลาด:</strong>
+    {% for message in error_messages %}
+        <div>{{ message }}</div>
+    {% endfor %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<form method="post">
+{% csrf_token %}
+<p class="text-muted">รหัสลูกค้าจะสร้างอัตโนมัติ</p>
+
+<div class="mb-3">
+<label class="form-label">ชื่อ</label>
+<input type="text" name="first_name" class="form-control" value="{{ form.first_name.value|default:'' }}" required>
+{% if form.first_name.errors %}
+<div class="text-danger">{{ form.first_name.errors.0 }}</div>
+{% endif %}
+</div>
+
+<div class="mb-3">
+<label class="form-label">นามสกุล</label>
+<input type="text" name="last_name" class="form-control" value="{{ form.last_name.value|default:'' }}" required>
+{% if form.last_name.errors %}
+<div class="text-danger">{{ form.last_name.errors.0 }}</div>
+{% endif %}
+</div>
+
+<div class="mb-3">
+<label class="form-label">เบอร์โทร <span class="text-danger">*</span></label>
+<input type="text" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}" required>
+{% if form.phone.errors %}
+<div class="text-danger">{{ form.phone.errors.0 }}</div>
+{% endif %}
+</div>
+
+<div class="mb-3">
+<label class="form-label">อีเมล</label>
+<input type="email" name="email" class="form-control" value="{{ form.email.value|default:'' }}">
+{% if form.email.errors %}
+<div class="text-danger">{{ form.email.errors.0 }}</div>
+{% endif %}
+</div>
+
+<div class="mb-3">
+<label class="form-label">ที่อยู่</label>
+<textarea name="address" class="form-control" rows="3">{{ form.address.value|default:'' }}</textarea>
+{% if form.address.errors %}
+<div class="text-danger">{{ form.address.errors.0 }}</div>
+{% endif %}
+</div>
+
+<button type="submit" class="btn btn-primary">บันทึก</button>
+<a href="/owners" class="btn btn-secondary">ยกเลิก</a>
+</form>
+</div>
+
+{% endblock %}

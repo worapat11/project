@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.page-header h2 {
+  margin: 0;
+  background: linear-gradient(135deg, #00b894, #00a37e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #00b894, #00a37e);
+  color: white;
+  border-color: transparent;
+}
+
+.bill-row {
+  transition: all 0.3s ease;
+}
+
+.bill-row:hover {
+  background-color: #f0f7ff !important;
+}
+
+.amount-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #00b894, #00a37e);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+</style>
+
+<div class="page-header">
+  <h2>✅ บิลที่ชำระแล้ว</h2>
+  <a href="{% url 'unpaid_bills' %}" class="btn btn-outline-danger btn-lg">⏳ ดูบิลค้างชำระ</a>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover table-bordered">
+    <thead>
+      <tr>
+        <th>🆔 Bill ID</th>
+        <th>🐾 สัตว์เลี้ยง</th>
+        <th>👤 เจ้าของ</th>
+        <th>💰 ยอดเงิน</th>
+        <th>💳 วิธีชำระ</th>
+        <th>📅 วันที่</th>
+        <th>⚙️ จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bill in bills %}
+      <tr class="bill-row">
+        <td><span class="badge bg-success">{{ bill.bill_id }}</span></td>
+        <td><strong style="color: #00b894;">{{ bill.record.pet.pet_name }}</strong></td>
+        <td>{{ bill.record.pet.owner.first_name }} {{ bill.record.pet.owner.last_name }}</td>
+        <td><span class="amount-tag">฿{{ bill.total_amount|floatformat:2 }}</span></td>
+        <td>{{ bill.payment_method.method_name }}</td>
+        <td>{{ bill.bill_date|date:'d/m/Y' }}</td>
+        <td>
+          <div style="display: flex; gap: 8px;">
+            <a href="{% url 'bill_detail' bill.bill_id %}" class="btn btn-sm btn-info">👁️ ดู</a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center">
+          <div class="empty-state" style="padding: 40px 20px;">
+            <div class="empty-state-icon">✅</div>
+            <p class="empty-state-text">ยังไม่มีบิลที่ชำระแล้ว</p>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

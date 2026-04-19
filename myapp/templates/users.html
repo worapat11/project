@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.page-header h2 {
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.btn-add {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(102, 126, 234, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+.search-bar {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.user-row {
+  transition: all 0.3s ease;
+}
+
+.user-row:hover {
+  background-color: #f5f5f5;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.badge-admin {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+.badge-user {
+  background-color: #a8a8a8;
+  color: white;
+}
+
+.action-links {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-edit, .btn-delete {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: white;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-edit {
+  background-color: #ffc107;
+  color: black;
+}
+
+.btn-edit:hover {
+  background-color: #ffb300;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+}
+
+.btn-delete:hover {
+  background-color: #c82333;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+</style>
+
+<div class="page-header">
+  <div>
+    <h2>👥 จัดการผู้ใช้งาน</h2>
+    <p class="text-muted">
+      {% if is_admin %}
+      บริหารผู้ใช้งาน กำหนดสิทธิ์ และควบคุมการเข้าถึงระบบ
+      {% else %}
+      ดูรายชื่อผู้ใช้งานในระบบ (เฉพาะ Admin เท่านั้นที่แก้ไขได้)
+      {% endif %}
+    </p>
+  </div>
+  {% if is_admin %}
+  <a href="{% url 'add_user' %}" class="btn-add">
+    <span>+</span> เพิ่มผู้ใช้งาน
+  </a>
+  {% endif %}
+</div>
+
+<div class="search-bar">
+  <form method="get" class="row g-2">
+    <div class="col-md-10">
+      <input type="text" name="search" class="form-control" placeholder="ค้นหาจากชื่อผู้ใช้ อีเมล หรือชื่อ-นามสกุล" value="{{ search_query }}">
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">🔍 ค้นหา</button>
+    </div>
+  </form>
+</div>
+
+{% if not is_admin %}
+<div class="alert alert-info alert-dismissible fade show">
+  <strong>ℹ️ ข้อมูลอ่านอย่างเดียว:</strong> คุณสามารถดูรายชื่อผู้ใช้งานทั้งหมดได้ แต่เฉพาะ Admin เท่านั้นที่สามารถสร้าง แก้ไข หรือลบผู้ใช้ได้
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+{% if users_data %}
+<div class="table-responsive">
+  <table class="table table-hover table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>ชื่อผู้ใช้</th>
+        <th>ชื่อ-นามสกุล</th>
+        <th>อีเมล</th>
+        <th>สิทธิ์</th>
+        <th>วันที่สร้าง</th>
+        <th>จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in users_data %}
+      <tr class="user-row">
+        <td><strong>{{ item.user.username }}</strong></td>
+        <td>
+          {% if item.user.first_name or item.user.last_name %}
+            {{ item.user.first_name }} {{ item.user.last_name }}
+          {% else %}
+            <em class="text-muted">-</em>
+          {% endif %}
+        </td>
+        <td>
+          {% if item.user.email %}
+            {{ item.user.email }}
+          {% else %}
+            <em class="text-muted">-</em>
+          {% endif %}
+        </td>
+        <td>
+          {% if item.role == 'admin' %}
+            <span class="role-badge badge-admin">🔐 Admin</span>
+          {% else %}
+            <span class="role-badge badge-user">👁️ User</span>
+          {% endif %}
+        </td>
+        <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+        <td>
+          {% if is_admin %}
+            <div class="action-links">
+              <a href="{% url 'edit_user' item.user.username %}" class="btn-edit">✏️ แก้ไข</a>
+              {% if item.user.username != request.user.username %}
+                <button type="button" class="btn-delete" onclick="showDeleteModal('{{ item.user.username }}')">🗑️ ลบ</button>
+              {% endif %}
+            </div>
+          {% else %}
+            <span class="text-muted text-center" style="display: block;">ไม่มีสิทธิ์จัดการ</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card text-center">
+  <div class="card-body empty-state">
+    <div class="empty-state-icon">👥</div>
+    <h5>ไม่พบผู้ใช้งาน</h5>
+    <p>ยังไม่มีผู้ใช้งานที่ตรงกับเงื่อนไขการค้นหา</p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteConfirmLabel">🗑️ ยืนยันการลบผู้ใช้งาน</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>คุณแน่ใจหรือว่าต้องการลบผู้ใช้งาน <strong id="usernameDisplay"></strong> ?</p>
+        <p class="text-muted mb-0">⚠️ การดำเนินการนี้ไม่สามารถยกเลิกได้</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">❌ ยกเลิก</button>
+        <form id="deleteForm" method="post" style="display: inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">✓ ยืนยันการลบ</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showDeleteModal(username) {
+  document.getElementById('usernameDisplay').textContent = username;
+  document.getElementById('deleteForm').action = `/users/delete/${username}/`;
+  const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+  modal.show();
+}
+</script>
+
+{% endblock %}

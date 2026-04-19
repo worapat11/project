@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 0;
+}
+
+.page-header h2 {
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 20px;
+}
+
+.search-bar .form-control {
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 15px;
+  transition: all 0.3s ease;
+}
+
+.search-bar .form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn-add {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  color: white;
+}
+
+.owner-row {
+  transition: all 0.3s ease;
+}
+
+.owner-row:hover {
+  background-color: #f0f7ff !important;
+}
+
+.owner-name {
+  font-weight: 600;
+  color: #667eea;
+}
+
+.owner-contact {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.action-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+</style>
+
+<div class="page-header">
+  <h2>ลูกค้า</h2>
+  <a href="{% url 'add_owner' %}" class="btn btn-add btn-lg">➕ เพิ่มลูกค้าใหม่</a>
+</div>
+
+<form method="get" class="search-bar">
+  <input type="text" name="q" value="{{ q|default:'' }}" class="form-control" placeholder="🔍 ค้นหาลูกค้า...">
+  <button type="submit" class="btn btn-primary">ค้นหา</button>
+  {% if q %}
+  <a href="{% url 'owner_list' %}" class="btn btn-secondary">รีเซ็ต</a>
+  {% endif %}
+</form>
+
+<div class="table-responsive">
+  <table class="table table-hover table-bordered">
+    <thead>
+      <tr>
+        <th>🆔 รหัสลูกค้า</th>
+        <th>👤 ชื่อ - นามสกุล</th>
+        <th>📞 โทรศัพท์</th>
+        <th>📧 อีเมล</th>
+        <th>📍 ที่อยู่</th>
+        <th>⚙️ จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for owner in owners %}
+      <tr class="owner-row">
+        <td><span class="badge bg-info">{{ owner.owner_id }}</span></td>
+        <td><strong class="owner-name">{{ owner.first_name }} {{ owner.last_name }}</strong></td>
+        <td class="owner-contact">{{ owner.phone|default:"ไม่มี" }}</td>
+        <td class="owner-contact">{{ owner.email|default:"ไม่มี" }}</td>
+        <td class="owner-contact">{{ owner.address|default:"ไม่มี"|truncatewords:3 }}</td>
+        <td>
+          <div class="action-links">
+            <a href="{% url 'edit_owner' owner.owner_id %}" class="btn btn-sm btn-warning">✏️ แก้ไข</a>
+            {% if user_role != 'user' %}
+            <a href="javascript:void(0)" onclick="confirmDelete('{% url 'delete_owner' owner.owner_id %}')" class="btn btn-sm btn-danger">🗑️ ลบ</a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="text-center">
+          <div class="empty-state" style="padding: 40px 20px;">
+            <div class="empty-state-icon">👥</div>
+            <p class="empty-state-text">ไม่มีข้อมูลเจ้าของ</p>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card main-card p-4 mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0">POS ขายสินค้า</h2>
+            <p class="text-muted mb-0">ระบบขายสินค้า บันทึกการขายและสต็อกอัตโนมัติ</p>
+            <p class="text-muted mb-0">รวมทั้งหมดในสต็อก: <strong>{{ total_stock|default:0 }} ชิ้น</strong></p>
+        </div>
+        <span class="badge bg-success">Live</span>
+    </div>
+
+    {% if message %}<div class="alert alert-success">{{ message }}</div>{% endif %}
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+    <form method="post" class="row g-3 mb-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_item">
+        <div class="col-md-4">
+            <label class="form-label">เลือกลูกค้า</label>
+            <select name="customer" class="form-select" required>
+                <option value="">-- เลือกลูกค้า --</option>
+                {% for owner in owners %}
+                <option value="{{ owner.owner_id }}" {% if owner.owner_id == selected_customer_id %}selected{% endif %}>{{ owner.first_name }} {{ owner.last_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">เลือกสินค้า</label>
+            <select name="medicine" class="form-select" required>
+                <option value="">-- เลือกสินค้า --</option>
+                {% for med in medicines %}
+                <option value="{{ med.medicine_id }}" data-stock="{{ med.current_stock|default:0 }}" data-price="{{ med.price|default:'0.00' }}">{{ med.medicine_name }} - ฿{{ med.price|default:'0.00' }} (คงเหลือ {{ med.current_stock|default:0 }} ชิ้น)</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">จำนวน</label>
+            <input type="number" name="quantity" value="1" min="1" class="form-control" required>
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary w-100">เพิ่มเข้ารถเข็น</button>
+        </div>
+    </form>
+
+    <div class="table-responsive mb-3">
+        <table class="table table-bordered align-middle text-center">
+            <thead class="table-dark">
+                <tr><th>#</th><th>ชื่อสินค้า</th><th>ราคา/หน่วย</th><th>จำนวน</th><th>รวม</th><th>จัดการ</th></tr>
+            </thead>
+            <tbody>
+                {% if cart %}
+                    {% for item in cart %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.medicine_name }}</td>
+                        <td>{{ item.unit_price|floatformat:2 }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.subtotal|floatformat:2 }}</td>
+                        <td>
+                            <form method="post" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="remove_item">
+                                <input type="hidden" name="medicine_id" value="{{ item.medicine_id }}">
+                                <button type="submit" class="btn btn-sm btn-danger">ลบ</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="6" class="text-center">รถเข็นยังว่าง</td></tr>
+                {% endif %}
+            </tbody>
+            <tfoot>
+                <tr><th colspan="4" class="text-end">รวมทั้งหมด</th><th colspan="2">฿{{ total|floatformat:2 }}</th></tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <form method="post" class="row g-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="checkout">
+        <input type="hidden" name="customer" value="{{ selected_customer_id }}">
+        <div class="col-md-12 text-end mt-2">
+            <button type="submit" class="btn btn-success" {% if not cart %}disabled{% endif %}>ชำระเงินและบันทึกการขาย</button>
+        </div>
+    </form>
+
+    <div class="mt-4 d-flex gap-2">
+        <a href="{% url 'pos_receipts_list' %}" class="btn btn-success">🧾 ดูใบเสร็จทั้งหมด</a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const medicineSelect = document.querySelector('select[name="medicine"]');
+    const quantityInput = document.querySelector('input[name="quantity"]');
+    const addForm = document.querySelector('form input[name="action"][value="add_item"]')?.closest('form');
+
+    function getOptionStock(option) {
+        return parseInt(option.getAttribute('data-stock') || '0', 10);
+    }
+
+    function updateOptionText(option, stock) {
+        const name = option.textContent.split(' - ')[0];
+        const price = option.getAttribute('data-price') || '0.00';
+        option.textContent = `${name} - ฿${parseFloat(price).toFixed(2)} (คงเหลือ ${stock} ชิ้น)`;
+        option.setAttribute('data-stock', stock);
+    }
+
+    function refreshAllStocks() {
+        for (let opt of medicineSelect.options) {
+            if (!opt.value) continue;
+            const current = getOptionStock(opt);
+            updateOptionText(opt, current);
+        }
+    }
+
+    if (medicineSelect && quantityInput && addForm) {
+        addForm.addEventListener('submit', function(e) {
+            const selectedOpt = medicineSelect.options[medicineSelect.selectedIndex];
+            if (!selectedOpt || !selectedOpt.value) return;
+            let stock = getOptionStock(selectedOpt);
+            const qty = parseInt(quantityInput.value || '0', 10);
+
+            if (qty <= 0) {
+                alert('กรุณากรอกจำนวนที่ถูกต้อง');
+                e.preventDefault();
+                return;
+            }
+
+            if (qty > stock) {
+                alert(`สต็อกไม่เพียงพอ: มีเพียง ${stock} ชิ้น`);
+                e.preventDefault();
+                return;
+            }
+
+            stock = stock - qty;
+            updateOptionText(selectedOpt, stock);
+        });
+
+        medicineSelect.addEventListener('change', function() {
+            const selectedOpt = medicineSelect.options[medicineSelect.selectedIndex];
+            if (selectedOpt && selectedOpt.value) {
+                const stock = getOptionStock(selectedOpt);
+                quantityInput.max = stock;
+            } else {
+                quantityInput.removeAttribute('max');
+            }
+        });
+
+        quantityInput.addEventListener('input', function() {
+            const selectedOpt = medicineSelect.options[medicineSelect.selectedIndex];
+            if (selectedOpt && selectedOpt.value) {
+                const stock = getOptionStock(selectedOpt);
+                if (parseInt(quantityInput.value || '0', 10) > stock) {
+                    quantityInput.value = stock;
+                }
+            }
+        });
+    }
+
+    refreshAllStocks();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card main-card p-4">
+  <h2 class="mb-3">เพิ่มประวัติการรักษา</h2>
+  <p class="text-muted">รวมทั้งหมดในสต็อก: <strong>{{ total_stock|default:0 }} ชิ้น</strong></p>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+      <p class="text-muted">รหัสประวัติจะสร้างอัตโนมัติ</p>
+    </div>
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    <div class="mb-3">
+      <label class="form-label">สัตว์เลี้ยง</label>
+      <select name="pet" class="form-select">
+        {% for p in pet %}
+        <option value="{{ p.pet_id }}">{{ p.pet_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+<div class="mb-3">
+<label>สัตวแพทย์</label>
+<select name="veterinarian" class="form-control">
+{% for v in vets %}
+<option value="{{ v.vet_id }}">{{ v.vet_name }}</option>
+{% endfor %}
+</select>
+</div>
+
+    <div class="mb-3">
+      <label class="form-label">วันที่</label>
+      <input type="date" name="visit_date" class="form-control" value="{{ today|default:'' }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">อาการ</label>
+      <textarea name="symptoms" class="form-control" placeholder="บรรยายอาการของสัตว์เลี้ยง..."></textarea>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">การวินิจฉัย</label>
+      <textarea name="diagnosis" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">ระบุการรักษา</label>
+      <textarea name="treatment" class="form-control"></textarea>
+    </div>
+    <h5>ยา</h5>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <select id="medicineSelect" class="form-select">
+          <option value="">-- เลือกยา --</option>
+          {% for m in medicines %}
+          <option value="{{ m.medicine_id }}" data-name="{{ m.medicine_name }}" data-stock="{{ m.current_stock|default:0 }}" data-price="{{ m.price|default:0 }}">{{ m.medicine_name }} (คงเหลือ {{ m.current_stock|default:0 }} ชิ้น)</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <input type="number" id="medicineQty" min="1" class="form-control" placeholder="จำนวน" value="1">
+      </div>
+      <div class="col-md-2">
+        <button type="button" class="btn btn-success w-100" onclick="addMedicineRow()">➕ เพิ่ม</button>
+      </div>
+    </div>
+
+    <div id="medicinesContainer" style="display: none;">
+      <h6>รายการยาที่เพิ่มแล้ว</h6>
+      <table class="table table-sm table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>ยา</th>
+            <th style="width: 120px;">จำนวน</th>
+            <th style="width: 120px;">ราคา/หน่วย</th>
+            <th style="width: 120px;">รวม</th>
+            <th style="width: 80px;">ลบ</th>
+          </tr>
+        </thead>
+        <tbody id="medicinesList"></tbody>
+      </table>
+    </div>
+
+    <input type="hidden" id="medicinesData" name="medicines_data" value="[]">
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">บันทึก</button>
+      <a href="/medical_records/" class="btn btn-secondary">ยกเลิก</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  let medicines = [];
+  let medicineStocks = {}; // Track remaining stock for each medicine
+
+  // Initialize stock tracking
+  function initializeStocks() {
+    const select = document.getElementById('medicineSelect');
+    for (let option of select.options) {
+      if (option.value) {
+        medicineStocks[option.value] = parseInt(option.getAttribute('data-stock')) || 0;
+      }
+    }
+  }
+
+  function addMedicineRow() {
+    const select = document.getElementById('medicineSelect');
+    const qty = document.getElementById('medicineQty');
+    const selectedOption = select.options[select.selectedIndex];
+
+    if (!select.value) {
+      alert('โปรดเลือกยา');
+      return;
+    }
+
+    const medicineId = select.value;
+    const quantity = parseInt(qty.value) || 1;
+    const availableStock = medicineStocks[medicineId] || 0;
+
+    if (quantity > availableStock) {
+      alert(`สต็อกไม่เพียงพอ! มีเพียง ${availableStock} ชิ้นเท่านั้น`);
+      return;
+    }
+
+    const med = {
+      id: medicineId,
+      name: selectedOption.getAttribute('data-name'),
+      stock: selectedOption.getAttribute('data-stock'),
+      price: selectedOption.getAttribute('data-price'),
+      quantity: quantity
+    };
+
+    medicines.push(med);
+    // Deduct from virtual stock
+    medicineStocks[medicineId] -= quantity;
+    updateMedicinesList();
+    updateStockDisplay();
+    select.value = '';
+    qty.value = '1';
+    select.focus();
+  }
+
+  function removeMedicineRow(index) {
+    const med = medicines[index];
+    // Restore stock
+    medicineStocks[med.id] += med.quantity;
+    medicines.splice(index, 1);
+    updateMedicinesList();
+    updateStockDisplay();
+  }
+
+  function updateMedicinesList() {
+    const container = document.getElementById('medicinesContainer');
+    const list = document.getElementById('medicinesList');
+    const input = document.getElementById('medicinesData');
+
+    if (medicines.length > 0) {
+      container.style.display = 'block';
+      let html = '';
+      medicines.forEach((med, idx) => {
+        const subtotal = (med.price * med.quantity).toFixed(2);
+        html += `<tr>
+          <td>${med.name}</td>
+          <td><input type="number" class="form-control form-control-sm" value="${med.quantity}" min="1" onchange="updateQuantity(${idx}, this.value)" style="width: 100%;"></td>
+          <td style="text-align: center;">${parseFloat(med.price).toFixed(2)} ฿</td>
+          <td style="text-align: center;"><span id="subtotal-${idx}">${subtotal}</span> ฿</td>
+          <td style="text-align: center;"><button type="button" class="btn btn-sm btn-danger" onclick="removeMedicineRow(${idx})">🗑️ ลบ</button></td>
+        </tr>`;
+      });
+      list.innerHTML = html;
+      input.value = JSON.stringify(medicines);
+    } else {
+      container.style.display = 'none';
+      list.innerHTML = '';
+      input.value = '[]';
+    }
+  }
+
+  function updateQuantity(index, newQty) {
+    const oldQty = medicines[index].quantity;
+    const newQuantity = parseInt(newQty) || 1;
+    const medicineId = medicines[index].id;
+    const availableStock = medicineStocks[medicineId] + oldQty; // Add back old qty first
+
+    if (newQuantity > availableStock) {
+      alert(`สต็อกไม่เพียงพอ! มีเพียง ${availableStock} ชิ้นเท่านั้น`);
+      return;
+    }
+
+    const difference = newQuantity - oldQty;
+    medicines[index].quantity = newQuantity;
+    medicineStocks[medicineId] -= difference;
+
+    const subtotal = (medicines[index].price * newQuantity).toFixed(2);
+    document.getElementById(`subtotal-${index}`).textContent = subtotal;
+    document.getElementById('medicinesData').value = JSON.stringify(medicines);
+    updateStockDisplay();
+  }
+
+  function updateStockDisplay() {
+    const select = document.getElementById('medicineSelect');
+    for (let option of select.options) {
+      if (option.value) {
+        const remaining = medicineStocks[option.value] || 0;
+        option.textContent = option.getAttribute('data-name') + ` (คงเหลือ ${remaining} ชิ้น)`;
+      }
+    }
+  }
+
+  // Initialize on load
+  document.addEventListener('DOMContentLoaded', function() {
+    initializeStocks();
+    updateStockDisplay();
+  });
+
+  // Allow Enter key to add medicine
+  document.getElementById('medicineQty').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      addMedicineRow();
+    }
+  });
+</script>
+{% endblock %}

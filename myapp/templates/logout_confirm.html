@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-5">
+<div class="col-md-5">
+<div class="card p-4 border-warning">
+<h4 class="text-center mb-4">⚠️ ยืนยันการออกจากระบบ</h4>
+
+<p class="text-center text-muted mb-4">
+คุณแน่ใจหรือว่าต้องการออกจากระบบ?
+</p>
+
+<div class="d-grid gap-2">
+<form method="post" class="d-inline">
+{% csrf_token %}
+<button type="submit" class="btn btn-danger btn-lg">
+🚪 ออกจากระบบ
+</button>
+</form>
+
+<a href="{% url 'dashboard' %}" class="btn btn-secondary">
+🔙 กลับไปยังแดชบอร์ด
+</a>
+</div>
+
+</div>
+</div>
+</div>
+
+{% endblock %}

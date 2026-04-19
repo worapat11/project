@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+.form-container {
+  max-width: 600px;
+  margin: 30px auto;
+}
+
+.card-header-custom {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px 12px 0 0;
+  margin-bottom: 0;
+}
+
+.card-header-custom h3 {
+  margin: 0;
+  font-weight: bold;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-section h5 {
+  color: #667eea;
+  font-weight: bold;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #667eea;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-control, .form-select {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-control:disabled {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.form-text.text-muted {
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.btn-container {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  border: none;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
+  color: white;
+}
+
+.alert {
+  border-radius: 8px;
+  border: none;
+  margin-bottom: 20px;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.alert ul {
+  margin-bottom: 0;
+  padding-left: 20px;
+}
+
+.breadcrumb-custom {
+  background-color: transparent;
+  padding: 0 0 20px 0;
+}
+
+.user-info-card {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 25px;
+}
+
+.user-info-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.user-info-label {
+  font-weight: 600;
+  color: #667eea;
+}
+</style>
+
+<div class="form-container">
+  <nav class="breadcrumb-custom">
+    <a href="{% url 'dashboard' %}">หน้าแรก</a>
+    <span> > </span>
+    <a href="{% url 'user_list' %}">จัดการผู้ใช้งาน</a>
+    <span> > </span>
+    <span>แก้ไข {{ user.username }}</span>
+  </nav>
+
+  {% if errors %}
+  <div class="alert alert-danger alert-dismissible fade show">
+    <strong>⚠️ พบข้อผิดพลาด:</strong>
+    <ul>
+      {% for error in errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endif %}
+
+  {% if success %}
+  <div class="alert alert-success alert-dismissible fade show">
+    <strong>✅ {{ success }}</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="card-header-custom">
+      <h3>✏️ แก้ไขผู้ใช้งาน: {{ user.username }}</h3>
+    </div>
+
+    <div class="card-body p-4">
+      <!-- ข้อมูลผู้ใช้ปัจจุบัน -->
+      <div class="user-info-card">
+        <h6 style="color: #667eea; margin-bottom: 12px;">📌 ข้อมูลปัจจุบัน</h6>
+        <div class="user-info-item">
+          <span class="user-info-label">ชื่อผู้ใช้:</span>
+          <span>{{ user.username }}</span>
+        </div>
+        <div class="user-info-item">
+          <span class="user-info-label">สร้างเมื่อ:</span>
+          <span>{{ user.date_joined|date:"d/m/Y H:i" }}</span>
+        </div>
+        {% if custom_user.role %}
+        <div class="user-info-item">
+          <span class="user-info-label">สิทธิ์:</span>
+          <span>
+            {% if custom_user.role %}
+              {% if custom_user.role == 'admin' %}
+                <span style="color: #dc3545;">🔐 Admin</span>
+              {% else %}
+                <span style="color: #a8a8a8;">👁️ User</span>
+              {% endif %}
+            {% endif %}
+          </span>
+        </div>
+        {% endif %}
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- ข้อมูลพื้นฐาน -->
+        <div class="form-section">
+          <h5>📋 ข้อมูลพื้นฐาน</h5>
+
+          <div class="form-group">
+            <label for="username">ชื่อผู้ใช้</label>
+            <input type="text" class="form-control" id="username" value="{{ user.username }}" disabled>
+            <div class="form-text text-muted">ไม่สามารถแก้ไขชื่อผู้ใช้ได้</div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">อีเมล</label>
+            <input type="email" class="form-control" id="email" name="email" 
+                   value="{{ user.email }}" placeholder="user@example.com">
+          </div>
+
+          <div class="form-group">
+            <label for="password">รหัสผ่านใหม่ (ไม่บังคับ)</label>
+            <input type="password" class="form-control" id="password" name="password" 
+                   placeholder="••••••••" minlength="6">
+            <div class="form-text text-muted">หากไม่กรอก รหัสผ่านเดิมจะยังคงใช้งาน</div>
+          </div>
+        </div>
+
+        <!-- ข้อมูลส่วนตัว -->
+        <div class="form-section">
+          <h5>👤 ข้อมูลส่วนตัว</h5>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="first_name">ชื่อ</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" 
+                       value="{{ user.first_name }}" placeholder="ชื่อ">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="last_name">นามสกุล</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" 
+                       value="{{ user.last_name }}" placeholder="นามสกุล">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- สิทธิ์อนุญาต -->
+        <div class="form-section">
+          <h5>🔐 สิทธิ์อนุญาต</h5>
+
+          <div class="form-group">
+            <label for="role">บทบาท</label>
+            <select class="form-select" id="role" name="role">
+              <option value="user" {% if custom_user.role == 'user' %}selected{% endif %}>
+                👁️ User (ผู้ใช้ปกติ) - เข้าถึงข้อมูลพื้นฐาน
+              </option>
+              <option value="admin" {% if custom_user.role == 'admin' %}selected{% endif %}>
+                🔐 Admin (ผู้ดูแลระบบ) - สิทธิ์เต็ม
+              </option>
+            </select>
+            <div class="form-text text-muted">เลือกบทบาทของผู้ใช้งาน</div>
+          </div>
+
+          <div class="alert alert-info">
+            <strong>ℹ️ บทบาทและสิทธิ์:</strong>
+            <ul style="margin-bottom: 0; margin-top: 8px;">
+              <li><strong>User:</strong> เข้าถึงข้อมูลพื้นฐาน</li>
+              <li><strong>Admin:</strong> สิทธิ์เต็มทั้งระบบ + จัดการผู้ใช้งาน</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="btn-container">
+          <button type="submit" class="btn-submit">💾 บันทึกการเปลี่ยนแปลง</button>
+          <a href="{% url 'user_list' %}" class="btn-cancel">❌ ยกเลิก</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

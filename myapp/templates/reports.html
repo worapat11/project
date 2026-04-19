@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+.reports-header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: rgb(0, 0, 0);
+  padding: 40px 30px;
+  border-radius: 15px;
+  margin-bottom: 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.reports-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.reports-header h2 {
+  margin: 0;
+  color: rgb(0, 0, 0);
+  font-size: 2.5rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.reports-header p {
+  margin: 10px 0 0 0;
+  opacity: 0.9;
+  font-size: 1.1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.report-card {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+  border-top: 4px solid var(--primary-color);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.report-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(45,90,39,0.05) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(30px, -30px);
+  pointer-events: none;
+}
+
+.report-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(45, 90, 39, 0.15);
+  border-top-color: var(--secondary-color);
+}
+
+.report-icon {
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+  color: var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+.report-card:hover .report-icon {
+  transform: scale(1.1);
+  color: var(--secondary-color);
+}
+
+.report-card h4 {
+  margin: 0 0 15px 0;
+  color: var(--text-dark);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.report-card p {
+  margin: 0 0 20px 0;
+  color: var(--text-light);
+  font-size: 1rem;
+  flex-grow: 1;
+  line-height: 1.6;
+}
+
+.report-card .btn {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border: none;
+  color: rgb(0, 0, 0);
+  font-weight: 600;
+  padding: 12px 25px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+}
+
+.report-card .btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(45, 90, 39, 0.3);
+  color: rgb(0, 0, 0);
+}
+
+.report-card:nth-child(1) { border-top-color: #45B7D1; }
+.report-card:nth-child(2) { border-top-color: var(--primary-color); }
+.report-card:nth-child(3) { border-top-color: #FF6B6B; }
+.report-card:nth-child(4) { border-top-color: var(--accent-color); }
+.report-card:nth-child(5) { border-top-color: #4ECDC4; }
+.report-card:nth-child(6) { border-top-color: #A29BFE; }
+.report-card:nth-child(7) { border-top-color: #FFA502; }
+
+@media (max-width: 768px) {
+  .report-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reports-header h2 {
+    font-size: 2rem;
+  }
+}
+</style>
+
+<div class="reports-header">
+  <h2><i class="fas fa-chart-bar me-3"></i>รายงาน</h2>
+  <p>ดูข้อมูลและสถิติที่สำคัญของคลินิก</p>
+</div>
+
+<div class="report-grid">
+  <a href="{% url 'report_stock_status' %}" class="report-card">
+    <div class="report-icon"><i class="fas fa-boxes"></i></div>
+    <h4>สถานะสต็อก</h4>
+    <p>ระดับสต็อกยาและสินค้า พร้อมการแจ้งเตือนสินค้าต่ำ</p>
+    <button class="btn">เปิดรายงาน →</button>
+  </a>
+
+  <a href="{% url 'report_stock_ledger' %}" class="report-card">
+    <div class="report-icon">📋</div>
+    <h4>บัญชีสต็อก</h4>
+    <p>ติดตามการเข้า/ออกของสต็อกยาตามวันที่</p>
+    <button class="btn">เปิดรายงาน →</button>
+  </a>
+
+  <a href="{% url 'report_appointments' %}" class="report-card">
+    <div class="report-icon">📅</div>
+    <h4>รายงานนัดหมาย</h4>
+    <p>นัดหมายทั้งหมด แยกตามสถานะและไป้อ</p>
+    <button class="btn">เปิดรายงาน →</button>
+  </a>
+
+  <a href="{% url 'report_payments' %}" class="report-card">
+    <div class="report-icon">💰</div>
+    <h4>รายงานการชำระเงิน</h4>
+    <p>สรุปบิลชำระสมัครรายวัน/เดือน/ปี</p>
+    <button class="btn">เปิดรายงาน →</button>
+  </a>
+
+  <a href="{% url 'report_animals' %}" class="report-card">
+    <div class="report-icon"><i class="fas fa-paw"></i></div>
+    <h4>รายงานสัตว์เลี้ยง</h4>
+    <p>สรุปสัตว์เลี้ยงตามสายพันธุ์และเจ้าของ</p>
+    <button class="btn">เปิดรายงาน →</button>
+  </a>
+  
+  <a href="{% url 'report_pos' %}" class="report-card">
+    <div class="report-icon"><i class="fas fa-shopping-cart"></i></div>
+    <h4>รายงาน POS</h4>
+    <p>รายงานการขายสินค้าผ่านระบบ POS</p>
+    <button class="btn">เปิดรายงาน →</button>
+  </a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>แก้ไขลูกค้า</h2>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="mb-3">
+<label>รหัสลูกค้า</label>
+<input type="text" name="owner_id" class="form-control" value="{{ owner.owner_id }}" readonly>
+</div>
+
+<div class="mb-3">
+<label>ชื่อ</label>
+<input type="text" name="first_name" class="form-control" value="{{ form.first_name.value|default:owner.first_name }}" required>
+{% if form.first_name.errors %}
+<div class="text-danger">{{ form.first_name.errors.0 }}</div>
+{% endif %}
+</div>
+
+<div class="mb-3">
+<label>นามสกุล</label>
+<input type="text" name="last_name" class="form-control" value="{{ form.last_name.value|default:owner.last_name }}" required>
+{% if form.last_name.errors %}
+<div class="text-danger">{{ form.last_name.errors.0 }}</div>
+{% endif %}
+</div>
+
+<div class="mb-3">
+<label>โทรศัพท์ <span class="text-danger">*</span></label>
+<input type="text" name="phone" class="form-control" value="{{ form.phone.value|default:owner.phone }}" required>
+{% if form.phone.errors %}
+<div class="text-danger">{{ form.phone.errors.0 }}</div>
+{% endif %}
+</div>
+
+<div class="mb-3">
+<label>อีเมล</label>
+<input type="email" name="email" class="form-control" value="{{ form.email.value|default:owner.email }}">
+{% if form.email.errors %}
+<div class="text-danger">{{ form.email.errors.0 }}</div>
+{% endif %}
+</div>
+
+<div class="mb-3">
+<label>ที่อยู่</label>
+<textarea name="address" class="form-control">{{ form.address.value|default:owner.address }}</textarea>
+{% if form.address.errors %}
+<div class="text-danger">{{ form.address.errors.0 }}</div>
+{% endif %}
+</div>
+
+<button class="btn btn-success">
+บันทึกการแก้ไข
+</button>
+<a href="/owners/" class="btn btn-secondary">
+ยกเลิก
+</a>
+
+</form>
+
+{% endblock %}
