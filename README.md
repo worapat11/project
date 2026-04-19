@@ -219,48 +219,6 @@ Payment_Method
 แม้ว่าในระบบ Web Application ที่พัฒนาจริงจะใช้ SQLite และ Application Logic เป็นหลัก
 แต่ในส่วนของการออกแบบฐานข้อมูล ได้มีการจำลองการใช้งาน SQL ขั้นสูง เพื่อแสดงแนวคิดการพัฒนาระบบในระดับที่สูงขึ้น และใช้ประกอบการเรียนรู้ทางด้านฐานข้อมูล
 
-⚡ Stored Procedures (Concept Design)
-หมายเหตุ: ส่วนนี้เป็นการออกแบบเพื่อการศึกษา 
-➕ Add (INSERT)
-sp_AddOwner
-sp_AddPet
-sp_AddAppointment
-sp_AddMedicine
-sp_AddBill
-🔍 Get (SELECT)
-sp_GetOwners
-sp_GetPets
-sp_GetAppointments
-sp_GetMedicines
-sp_GetBills
-✏️ Update
-sp_UpdateOwner
-sp_UpdatePet
-sp_UpdateAppointment
-sp_UpdateMedicine
-sp_UpdateBill
-
-🤖 Triggers (Concept Design)
-หมายเหตุ: ออกแบบเพื่อแสดงแนวคิดการควบคุมข้อมูลในระดับฐานข้อมูล
-
-tr_Owners_Validate
-→ ตรวจสอบข้อมูลสำคัญก่อนบันทึก
-tr_Medicines_CheckStock
-→ ป้องกันปัญหาสต็อกติดลบ
-tr_PreventDeleteActivePet
-→ ป้องกันการลบข้อมูลที่ยังมีความสัมพันธ์
-
-🔍 Functions & Views (Concept Design)
-หมายเหตุ: ใช้เพื่อแสดงแนวคิดการออกแบบ Query ขั้นสูง
-Functions
-fn_GetPetMedicalHistory → ดึงประวัติการรักษา
-fn_CalculateBillTotal → คำนวณยอดรวมค่าใช้จ่าย
-
-Views
-vw_BillReport → รายงานบิล
-vw_MedicalHistory → ประวัติการรักษา
-vw_MedicineStock → สถานะสต็อกยา
-
 🛠️ Technology Stack (Enhanced Version)
 Database Management System: SQLite (Lightweight & Embedded Database)
 Back-end Logic: SQL Operations ร่วมกับ Database Triggers และ Application Logic
